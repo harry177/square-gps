@@ -1,13 +1,15 @@
 import { Marker } from "./store";
 import store from "@/store";
 
+const API_KEY = '6737d82d8dafc919822050akt68e943';
+
 export class Backend {
   static async geocodeAddress(address: string) {
     try {
       const response = await fetch(
         `https://geocode.maps.co/search?q=${encodeURIComponent(
           address
-        )}&api_key=6737d82d8dafc919822050akt68e943`
+        )}&api_key=${API_KEY}`
       );
       const data = await response.json();
       if (data.length > 0) {
@@ -20,6 +22,12 @@ export class Backend {
       this.showErrorDialog(store, error.message);
       throw error;
     }
+  }
+
+  static async getAddressByCoordinates(latitude: number, longitude: number): Promise<string> {
+    const response = await fetch(`https://geocode.maps.co/reverse?lat=${latitude}&lon=${longitude}&api_key=${API_KEY}`);
+    const data = await response.json();
+    return data.display_name;
   }
 
   static showErrorDialog(store: any, message: string) {

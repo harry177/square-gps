@@ -1,6 +1,6 @@
 <template>
   <v-app-bar app>
-    <v-toolbar-title>Моё приложение</v-toolbar-title>
+    <v-toolbar-title>Тестовое задание для SquareGPS</v-toolbar-title>
     <v-spacer></v-spacer>
     <a href="/">
       <button class="header-button">О ЗАДАНИИ</button>

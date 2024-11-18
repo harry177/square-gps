@@ -6,13 +6,13 @@
 import L from "leaflet";
 import { onMounted, watchEffect } from "vue";
 import { useGeolocation } from "@vueuse/core";
-import { useStore } from 'vuex'
-import { Marker } from '@/store'
+import { useStore } from "vuex";
+import { Marker } from "../store"
 
 L.Icon.Default.mergeOptions({
-  iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
-  iconUrl: require('leaflet/dist/images/marker-icon.png'),
-  shadowUrl: require('leaflet/dist/images/marker-shadow.png')
+  iconRetinaUrl: require("leaflet/dist/images/marker-icon-2x.png"),
+  iconUrl: require("leaflet/dist/images/marker-icon.png"),
+  shadowUrl: require("leaflet/dist/images/marker-shadow.png"),
 });
 
 const { coords } = useGeolocation();
@@ -21,29 +21,41 @@ let map: L.Map;
 let userGeoMarker: L.Marker;
 let centeredMarker: L.Marker;
 
-const store = useStore()
+const store = useStore();
 
 const addMarkerToMap = (marker: Marker) => {
-  L
-    .marker([marker.latitude, marker.longitude])
+  L.marker([marker.latitude, marker.longitude])
     .addTo(map)
     .bindPopup(
       `Saved Marker at (<strong>${marker.latitude},${marker.longitude}</strong>)`
-    )
-}
+    );
+};
 
 onMounted(() => {
-  map = L
-    .map("map")
-    .setView([store.state.userMarker.latitude, store.state.userMarker.longitude], 8);
+  map = L.map("map").setView(
+    [store.state.userMarker.latitude, store.state.userMarker.longitude],
+    8
+  );
 
-  L
-    .tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 19,
-      attribution:
-        '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-    })
-    .addTo(map);
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution:
+      '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+  }).addTo(map);
+
+  map.addEventListener("click", (e) => {
+    const { lat: latitude, lng: longitude } = e.latlng;
+
+    L.marker([latitude, longitude])
+      .addTo(map)
+      .bindPopup(
+        `Saved Marker at (<strong>${latitude.toFixed(2)},${longitude.toFixed(
+          2
+        )}</strong>)`
+      );
+
+      store.dispatch("addMarkerFromCoords", {latitude, longitude});
+  });
 });
 
 watchEffect(() => {
@@ -51,24 +63,29 @@ watchEffect(() => {
     coords.value.latitude !== Number.POSITIVE_INFINITY &&
     coords.value.longitude !== Number.POSITIVE_INFINITY
   ) {
-    store.commit('SET_USER_MARKER', {
+    store.commit("SET_USER_MARKER", {
       latitude: coords.value.latitude,
-      longitude: coords.value.longitude
-    })
+      longitude: coords.value.longitude,
+    });
 
     if (userGeoMarker) {
       map.removeLayer(userGeoMarker);
     }
 
-    userGeoMarker = L
-      .marker([store.state.userMarker.latitude, store.state.userMarker.longitude])
+    userGeoMarker = L.marker([
+      store.state.userMarker.latitude,
+      store.state.userMarker.longitude,
+    ])
       .addTo(map)
       .bindPopup("User Marker");
 
-    map.setView([store.state.userMarker.latitude, store.state.userMarker.longitude], 13);
+    map.setView(
+      [store.state.userMarker.latitude, store.state.userMarker.longitude],
+      13
+    );
 
     const el = userGeoMarker.getElement();
-    
+
     if (el) {
       el.style.filter = "hue-rotate(120deg)";
     }
@@ -82,18 +99,28 @@ watchEffect(() => {
       map.removeLayer(centeredMarker);
     }
 
-    centeredMarker = L
-      .marker([store.state.centeredMarker.latitude, store.state.centeredMarker.longitude])
+    centeredMarker = L.marker([
+      store.state.centeredMarker.latitude,
+      store.state.centeredMarker.longitude,
+    ])
       .addTo(map)
-      .bindPopup(`Focused Marker at (<strong>${store.state.centeredMarker.latitude},${store.state.centeredMarker.longitude}</strong>)`);
+      .bindPopup(
+        `Focused Marker at (<strong>${store.state.centeredMarker.latitude},${store.state.centeredMarker.longitude}</strong>)`
+      );
 
-    map.setView([store.state.centeredMarker.latitude, store.state.centeredMarker.longitude], 13);
+    map.setView(
+      [
+        store.state.centeredMarker.latitude,
+        store.state.centeredMarker.longitude,
+      ],
+      13
+    );
   }
 
   if (map) {
     store.state.markers.forEach((marker: Marker) => {
-      addMarkerToMap(marker)
-    })
+      addMarkerToMap(marker);
+    });
   }
 });
 </script>

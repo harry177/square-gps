@@ -9,6 +9,7 @@
               <v-list-item v-for="(marker, index) in markers" :key="index">
                 <v-list-item-content v-auto-grow>
                   {{ marker.address }}
+                  <p>Координаты: {{ marker.latitude }}, {{ marker.longitude }}</p>
                 </v-list-item-content>
                 <v-list-item-action>
                   <v-btn icon @click="handleMarkerClick(index)">
@@ -32,12 +33,10 @@
 </template>
 
 <script>
-import { watchEffect } from "vue";
 import { mapState, mapActions, mapMutations } from "vuex";
 import { Backend } from "@/server";
 import AppMap from "@/components/AppMap";
 import ErrorDialog from "@/components/ErrorDialog.vue";
-import store from "@/store";
 
 export default {
   components: {
@@ -74,13 +73,8 @@ export default {
     });
   },
 };
-
-watchEffect(() => {
- 
-    console.log(store.state.errorDialogMessage);
- 
-});
 </script>
+
 <style>
 .v-list {
   overflow: hidden !important;

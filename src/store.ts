@@ -3,7 +3,7 @@ import { Backend } from "./server";
 import { createStore, StoreOptions } from "vuex";
 
 interface RootState {
-  errorDialogMessage: null | string,
+  errorDialogMessage: null | string;
   markers: Marker[];
   userMarker: Marker;
   centeredMarker: Marker;
@@ -33,7 +33,7 @@ const store: StoreOptions<RootState> = {
       state.centeredMarker = marker;
     },
     showErrorDialog(state, message) {
-      state.errorDialogMessage = message
+      state.errorDialogMessage = message;
     },
     closeErrorDialog(state) {
       state.errorDialogMessage = null;
@@ -47,6 +47,24 @@ const store: StoreOptions<RootState> = {
           address,
           latitude: coordinates.lat,
           longitude: coordinates.lng,
+        };
+        commit("addMarker", marker);
+        Backend.saveMarkers(state.markers);
+      } catch (error) {
+        console.error(error);
+      }
+    },
+    async addMarkerFromCoords({ commit, state }, { latitude, longitude }) {
+      try {
+        const address = await Backend.getAddressByCoordinates(
+          latitude,
+          longitude
+        );
+
+        const marker: Marker = {
+          address: address || "",
+          latitude: latitude,
+          longitude: longitude,
         };
         commit("addMarker", marker);
         Backend.saveMarkers(state.markers);
