@@ -17,7 +17,7 @@
                 </v-list-item-action>
               </v-list-item>
             </v-list>
-            <v-btn @click="saveMarkerToLocalStorageMarker" color="primary"
+            <v-btn @click="saveMarkerToLocalStorage" color="primary"
               >Добавить маркер</v-btn
             >
           </v-container>
@@ -27,28 +27,38 @@
         </v-col>
       </v-row>
     </v-container>
+    <ErrorDialog v-model="errorDialogMessage" @close="closeErrorDialog" />
   </v-container>
 </template>
 
 <script>
+import { watchEffect } from "vue";
 import { mapState, mapActions, mapMutations } from "vuex";
 import { Backend } from "@/server";
 import AppMap from "@/components/AppMap";
+import ErrorDialog from "@/components/ErrorDialog.vue";
+import store from "@/store";
 
 export default {
   components: {
     AppMap,
+    ErrorDialog,
   },
   computed: {
-    ...mapState(["markers"]),
+    ...mapState(["markers", "errorDialogMessage"]),
   },
   methods: {
     ...mapActions(["addMarkerFromAddress", "centerOnMarker"]),
-    ...mapMutations(["addMarker"]),
-    async saveMarkerToLocalStorageMarker() {
+    ...mapMutations(["addMarker", "showErrorDialog", "closeErrorDialog"]),
+
+    async saveMarkerToLocalStorage() {
       const address = prompt("Введите адрес");
       if (address) {
-        await this.addMarkerFromAddress(address);
+        try {
+          await this.addMarkerFromAddress(address);
+        } catch (error) {
+          this.showErrorDialog(`Ошибка: ${error.message}`);
+        }
       }
     },
     async handleMarkerClick(index) {
@@ -64,6 +74,12 @@ export default {
     });
   },
 };
+
+watchEffect(() => {
+ 
+    console.log(store.state.errorDialogMessage);
+ 
+});
 </script>
 <style>
 .v-list {

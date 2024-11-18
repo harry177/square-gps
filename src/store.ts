@@ -3,6 +3,7 @@ import { Backend } from "./server";
 import { createStore, StoreOptions } from "vuex";
 
 interface RootState {
+  errorDialogMessage: null | string,
   markers: Marker[];
   userMarker: Marker;
   centeredMarker: Marker;
@@ -14,30 +15,9 @@ export interface Marker {
   longitude: number;
 }
 
-interface Mutations {
-  addMarker(state: RootState, marker: Marker): void;
-  SET_USER_MARKER(state: RootState, marker: Marker): void;
-}
-
-interface Actions {
-  addMarkerFromAddress(
-    {
-      commit,
-      state,
-    }: { commit: (type: string, payload: Marker) => void; state: RootState },
-    address: string
-  ): Promise<void>;
-  centerOnMarker(
-    {
-      state,
-      commit,
-    }: { state: RootState; commit: (type: string, payload: Marker) => void },
-    index: number
-  ): void;
-}
-
 const store: StoreOptions<RootState> = {
   state: {
+    errorDialogMessage: null,
     markers: [],
     userMarker: { latitude: 0, longitude: 0, address: "" },
     centeredMarker: { latitude: 0, longitude: 0, address: "" },
@@ -51,7 +31,13 @@ const store: StoreOptions<RootState> = {
     },
     SET_MARKER(state, marker) {
       state.centeredMarker = marker;
-    }
+    },
+    showErrorDialog(state, message) {
+      state.errorDialogMessage = message
+    },
+    closeErrorDialog(state) {
+      state.errorDialogMessage = null;
+    },
   },
   actions: {
     async addMarkerFromAddress({ commit, state }, address: string) {
@@ -65,7 +51,7 @@ const store: StoreOptions<RootState> = {
         commit("addMarker", marker);
         Backend.saveMarkers(state.markers);
       } catch (error) {
-        console.error("Ошибка геокодирования:", error);
+        console.error(error);
       }
     },
     centerOnUserMarker({ state, commit }, index) {

@@ -68,6 +68,7 @@ watchEffect(() => {
     map.setView([store.state.userMarker.latitude, store.state.userMarker.longitude], 13);
 
     const el = userGeoMarker.getElement();
+    
     if (el) {
       el.style.filter = "hue-rotate(120deg)";
     }
